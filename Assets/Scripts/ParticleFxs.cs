@@ -48,19 +48,10 @@ public class ParticleFxs : MonoBehaviour
                 x.transform.localScale = localScale;
                 x.SetActive(true);
                 x.GetComponent<ParticleSystem>().Play(true);
-                StartCoroutine(DisableFx(x));
                 break;
             }
 
         }
-    }
-
-    IEnumerator DisableFx(GameObject x)
-    {
-        yield return new WaitUntil(() => {
-            return !x.GetComponent<ParticleSystem>().isPlaying; 
-        });
-        x.SetActive(false);
     }
 
     public void StopFx(Utility.ParticleFx name)

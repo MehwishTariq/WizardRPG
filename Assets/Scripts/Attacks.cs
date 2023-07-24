@@ -16,6 +16,7 @@ public class Attacks : MonoBehaviour
 
     #region variables
 
+    public int enemyLimit;
     public float damageVal;
     public float healingVal;
 
@@ -24,13 +25,49 @@ public class Attacks : MonoBehaviour
 
     #endregion
 
-
+     
     private void OnEnable()
     {
         if (type == Utility.AttackTypes.Magic)
         {
-            GetComponent<SphereCollider>().radius = 0.1f;
-            StartCoroutine(ExpandEffect());
+            if (!canHeal)
+            {
+                GetComponent<SphereCollider>().radius = 0.1f;
+                float valuetoTween = GetComponent<SphereCollider>().radius;
+
+                if (hasParticleFx)
+                    ParticleFxs.instance.PlayFx(Utility.ParticleFx.MagicCircle, transform.position, transform.eulerAngles, transform.lossyScale);
+
+                DOTween.To(() => valuetoTween, x => valuetoTween = x, 2f, 3f).OnUpdate(() =>
+                {
+                    GetComponent<SphereCollider>().radius = valuetoTween;
+                }).OnComplete(() =>
+                {
+                    GetComponent<SphereCollider>().radius = 0.1f;
+                    hitObjects = 0;
+                    if (gameObject.layer == LayerMask.NameToLayer("Player"))
+                        EventManager.PlayerMagicDone();
+                });
+            }
+            else
+            {
+                if (gameObject.layer == LayerMask.NameToLayer("Player"))
+                {
+                    if (hasParticleFx)
+                        ParticleFxs.instance.PlayFx(Utility.ParticleFx.HealField, transform.position, transform.eulerAngles, new Vector3(transform.lossyScale.x, transform.lossyScale.x, transform.lossyScale.x));
+
+                    float valuetoTween = gameObject.GetComponentInParent<Health>().health;
+
+                    DOTween.To(() => valuetoTween, x => valuetoTween = x, healingVal, 2f).OnUpdate(() =>
+                    {
+                        gameObject.GetComponentInParent<Health>().health = valuetoTween;
+                        
+                    }).OnComplete(() =>
+                    {
+                        EventManager.PlayerMagicDone();
+                    });
+                }
+            }
         }
        else
             Debug.Log(type.ToString() + weaponType.ToString());
@@ -64,42 +101,39 @@ public class Attacks : MonoBehaviour
 
     }
 
+    int hitObjects; 
+
     void MagicAttack(GameObject hitObject)
     {
-        if (hitObject.CompareTag("Enemy"))
+        if (hitObjects < enemyLimit)
         {
-            if (hasParticleFx)
-                ParticleFxs.instance.PlayFx(Utility.ParticleFx.MagicCircle, transform.position, transform.eulerAngles, transform.lossyScale);
+            if (hitObject.CompareTag("Enemy"))
+            {
+                hitObjects++;
+                if (hasParticleFx)
+                    ParticleFxs.instance.PlayFx(Utility.ParticleFx.MagicCircle, hitObject.transform.position, transform.eulerAngles, transform.lossyScale);
 
-            ParticleFxs.instance.PlayFx(Utility.ParticleFx.Blood, hitObject.transform.position, Vector3.zero, Vector3.one);
-            hitObject.GetComponent<Health>().health -= damageVal;
-        }
+                ParticleFxs.instance.PlayFx(Utility.ParticleFx.Blood, hitObject.transform.position, Vector3.zero, Vector3.one);
+                hitObject.GetComponent<Health>().health -= damageVal;
+            }
 
-        if (hitObject.CompareTag("Player"))
-        {
-            if (hasParticleFx)
-                ParticleFxs.instance.PlayFx(Utility.ParticleFx.MagicCircle, transform.position, transform.eulerAngles, transform.lossyScale);
+            if (hitObject.CompareTag("Player"))
+            {
+                hitObjects++;
+                if (hasParticleFx)
+                    ParticleFxs.instance.PlayFx(Utility.ParticleFx.MagicCircle, hitObject.transform.position, transform.eulerAngles, transform.lossyScale);
 
-            hitObject.GetComponent<Health>().health -= damageVal;
-            
-        }
+                hitObject.GetComponent<Health>().health -= damageVal;
 
-        if (hitObject.CompareTag("Weapon"))
-        {
-           
+            }
+
+            if (hitObject.CompareTag("Weapon"))
+            {
+
+            }
         }
     }
 
-    IEnumerator ExpandEffect()
-    {
-        while (GetComponent<SphereCollider>().radius <= 3.9f)
-        {
-            GetComponent<SphereCollider>().radius += 0.3f;
-            yield return new WaitForEndOfFrame();
-        }
-        GetComponent<SphereCollider>().radius = 0.1f;
-        gameObject.SetActive(false);
-    }
    
 
     private void OnTriggerEnter(Collider other)

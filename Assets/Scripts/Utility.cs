@@ -20,9 +20,9 @@ public class Utility : MonoBehaviour
         Attack,
         Heal
     }
-    public enum PlayerStates
+    public enum CurrentState
     {
-        Movement,
+        Patrolling,
         Battle,
         Healing
     }
@@ -37,7 +37,8 @@ public class Utility : MonoBehaviour
     {
         FireMagic,
         ThunderMagic,
-        PoisonMagic
+        PoisonMagic,
+        HealingMagic
     }
 
     public enum ParticleFx
@@ -45,7 +46,7 @@ public class Utility : MonoBehaviour
         HealField,
         SwordHit,
         MagicCircle,
-        Blood
+        Blood,
     }
 
     public enum WeaponTypes

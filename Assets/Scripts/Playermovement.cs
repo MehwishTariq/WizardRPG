@@ -15,23 +15,44 @@ public class Playermovement : MonoBehaviour
     public Camera followCam;
     public GameObject[] attacks, weapons, magic;
 
+    private void OnEnable()
+    {
+        EventManager.magicOver += RetrieveWeapon;
+    }
+    private void OnDisable()
+    {
+        EventManager.magicOver -= RetrieveWeapon;
+    }
     void Start()
     {
         player = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
     }
-
+    bool isDoingMagic;
 
     void Update()
     {
-        MovementMode();
+        if(!isDoingMagic)
+            MovementMode();
         Controls();
     }
 
     #region Controls
-    public void Controls()
-    {
 
+    void RetrieveWeapon()
+    {
+        anim.StopPlayback();
+        isDoingMagic = false;
+        Debug.Log("HERE!");
+        attacks[(int)Utility.AttackTypes.Weapon].SetActive(true);
+        weapons[(int)Utility.WeaponTypes.Staffs].SetActive(true);
+        attacks[(int)Utility.AttackTypes.Magic].SetActive(false);
+        foreach (GameObject x in magic)
+            x.SetActive(false);
+    }
+
+    void Controls()
+    {
         if (Input.GetMouseButtonDown(0))
         {
             anim.StopPlayback();
@@ -45,6 +66,7 @@ public class Playermovement : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
+            isDoingMagic = true;
             anim.StopPlayback();
             attacks[(int)Utility.AttackTypes.Weapon].SetActive(false);
             attacks[(int)Utility.AttackTypes.Magic].SetActive(true);
@@ -54,7 +76,11 @@ public class Playermovement : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.H))
         {
+            isDoingMagic = true;
             anim.StopPlayback();
+            attacks[(int)Utility.AttackTypes.Weapon].SetActive(false);
+            attacks[(int)Utility.AttackTypes.Magic].SetActive(true);
+            magic[(int)Utility.MagicTypes.HealingMagic].SetActive(true);
             SetHealingAnimation(0);
         }
 
@@ -67,7 +93,7 @@ public class Playermovement : MonoBehaviour
     #endregion
 
     #region Movement
-    public void MovementMode()
+    void MovementMode()
     {
         x = Input.GetAxis("Horizontal");
         z = Input.GetAxis("Vertical");
@@ -82,7 +108,7 @@ public class Playermovement : MonoBehaviour
     }
 
     
-    public Vector3 RotatePlayer(Vector3 move)
+    Vector3 RotatePlayer(Vector3 move)
     {
         Vector3 moveDir = Vector3.zero;
 
@@ -96,7 +122,7 @@ public class Playermovement : MonoBehaviour
         }
         return moveDir;
     }
-    public void SetMoveAnimation(float x, float z)
+    void SetMoveAnimation(float x, float z)
     {
         anim.SetInteger(Utility.PLAYERSTATE, (int)Utility.AnimationStates.Move);
 
@@ -116,7 +142,7 @@ public class Playermovement : MonoBehaviour
     #endregion
 
     #region Attack
-    public void SetAttackAnimation(int attack = 0)
+    void SetAttackAnimation(int attack = 0)
     {
         anim.SetInteger(Utility.PLAYERSTATE, (int)Utility.AnimationStates.Attack);
         anim.SetFloat(Utility.ATTACKTYPE, (float)attack);
@@ -125,11 +151,12 @@ public class Playermovement : MonoBehaviour
     #endregion
 
     #region Heal
-    public void SetHealingAnimation(int heal)
+    void SetHealingAnimation(int heal)
     {
         anim.SetInteger(Utility.PLAYERSTATE, (int)Utility.AnimationStates.Heal);
         anim.SetFloat(Utility.HEALINGTYPE, (float)heal);
     }
+
     #endregion
 
 }

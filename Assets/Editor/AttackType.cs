@@ -29,6 +29,7 @@ public class AttackType : Editor
 
         atk.damageVal = EditorGUILayout.FloatField("DamageValue", atk.damageVal);
         atk.healingVal = EditorGUILayout.FloatField("HealingValue", atk.healingVal);
+        atk.enemyLimit = EditorGUILayout.IntField("EnemyLimit", atk.enemyLimit);
         atk.canHeal = EditorGUILayout.Toggle("CanHeal", atk.canHeal);
         atk.hasParticleFx = EditorGUILayout.Toggle("HasParticleFx", atk.hasParticleFx);
         serializedObject.ApplyModifiedProperties();
