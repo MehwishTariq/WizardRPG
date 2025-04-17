@@ -11,6 +11,6 @@ public class Magic : Attack
     public override void AttackProperty()
     {
         Debug.Log("HereMAgic");
-        throw new System.NotImplementedException();
+        //throw new System.NotImplementedException();
     }
 }
